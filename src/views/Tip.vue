@@ -36,7 +36,7 @@ const copyText = async () => {
       duration.value = 2000
     });
   } catch (err) {
-    console.error("Error copying to clipboard");
+    console.error("Error copying to clipboard", err);
   }
 };
 </script>

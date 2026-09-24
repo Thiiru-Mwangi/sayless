@@ -25,6 +25,38 @@ export interface UploadBounds {
 }
 
 /**
+ * Scales a size down so its longest edge fits `maxDimension`, preserving
+ * aspect ratio. Images already within bounds are left alone — never upscaled.
+ */
+export function fitWithin(
+  width: number,
+  height: number,
+  maxDimension: number,
+): { width: number; height: number } {
+  const longest = Math.max(width, height);
+  const scale = longest > 0 ? Math.min(1, maxDimension / longest) : 1;
+
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
+
+/**
+ * Picks the output encoding. PNG is kept only when the source was PNG and the
+ * caller asked for it, so transparency survives where it matters; photographs
+ * always become JPEG, which stays far smaller.
+ */
+export function outputMimeType(
+  sourceType: string,
+  preservePng: boolean | undefined,
+): "image/png" | "image/jpeg" {
+  return preservePng === true && sourceType === "image/png"
+    ? "image/png"
+    : "image/jpeg";
+}
+
+/**
  * Decodes an uploaded file, downscales it to fit `maxDimension`, and re-encodes
  * it as a bounded data URL.
  */
@@ -35,11 +67,11 @@ export async function fileToBoundedDataUrl(
   const image = await loadImageFromFile(file);
 
   try {
-    const source = Math.max(image.naturalWidth, image.naturalHeight);
-    const scale = source > 0 ? Math.min(1, bounds.maxDimension / source) : 1;
-
-    const width = Math.max(1, Math.round(image.naturalWidth * scale));
-    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const { width, height } = fitWithin(
+      image.naturalWidth,
+      image.naturalHeight,
+      bounds.maxDimension,
+    );
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -52,9 +84,9 @@ export async function fileToBoundedDataUrl(
 
     context.drawImage(image, 0, 0, width, height);
 
-    const keepPng = bounds.preservePng === true && file.type === "image/png";
+    const mimeType = outputMimeType(file.type, bounds.preservePng);
 
-    return keepPng
+    return mimeType === "image/png"
       ? canvas.toDataURL("image/png")
       : canvas.toDataURL("image/jpeg", JPEG_QUALITY);
   } finally {
