@@ -36,7 +36,7 @@ const store = useTemplateStore();
       <div
         class="wrap-break-word py-[24px] text-[60px] leading-snug font-normal text-white"
       >
-        <p class="whitespace-pre-wrap blur-[.3px]">
+        <p class="whitespace-pre-wrap">
           {{
             store.twitterMessage || "The quick brown fox jumped over the fence."
           }}

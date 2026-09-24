@@ -11,7 +11,7 @@ const store = useTemplateStore();
   >
     <div class="flex h-full flex-col justify-center space-y-[12px]">
       <div class="py-[24px] text-[48px] leading-snug text-white">
-        <p class="whitespace-pre-wrap blur-[.3px]">
+        <p class="whitespace-pre-wrap">
           {{
             store.posterMessage || "The quick brown fox jumped over the fence."
           }}
